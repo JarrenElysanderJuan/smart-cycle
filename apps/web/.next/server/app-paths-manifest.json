@@ -1,0 +1,7 @@
+{
+  "/page": "app/page.js",
+  "/stores/register/page": "app/stores/register/page.js",
+  "/bins/page": "app/bins/page.js",
+  "/alerts/page": "app/alerts/page.js",
+  "/food-banks/register/page": "app/food-banks/register/page.js"
+}
