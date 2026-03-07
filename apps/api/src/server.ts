@@ -9,6 +9,7 @@ import alertsRouter from './routes/alerts.route.js';
 import telemetryHistoryRouter from './routes/telemetry-history.route.js';
 import storesRouter from './routes/stores.route.js';
 import foodBanksRouter from './routes/food-banks.route.js';
+import lifecycleRouter from './routes/lifecycle.route.js';
 
 const app = express();
 
@@ -29,6 +30,8 @@ app.use('/api/v1/bins', telemetryHistoryRouter);
 app.use('/api/v1/alerts', alertsRouter);
 app.use('/api/v1/stores', storesRouter);
 app.use('/api/v1/food-banks', foodBanksRouter);
+app.use('/api/v1/alerts', lifecycleRouter);  // approve, confirm-pickup
+app.use('/api/v1', lifecycleRouter);          // stores/:id/bins, stores/:id/alerts, food-banks/:id/donations
 
 // Health check — no auth required
 app.get('/health', (_req, res) => {

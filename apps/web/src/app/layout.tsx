@@ -20,7 +20,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen">
+      <body className="min-h-screen" suppressHydrationWarning>
         <div className="flex min-h-screen">
           {/* Sidebar Navigation */}
           <nav className="w-64 border-r border-[var(--color-border)] bg-[var(--color-surface)] p-6 flex flex-col gap-2 shrink-0">

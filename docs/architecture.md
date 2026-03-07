@@ -80,3 +80,45 @@ graph TB
 2. **User → Dashboard:** Auth0 JWT. Validated by middleware. Roles embedded in JWT claims.
 3. **Dashboard → Database:** Supabase client with RLS. Users only see data from their `organization_id`.
 4. **Service operations:** Supabase service role key (bypasses RLS) for telemetry ingestion and background jobs.
+
+---
+
+## Donation Lifecycle
+
+See [donation-lifecycle.md](donation-lifecycle.md) for full details.
+
+**Status flow:** `pending → approved_by_store → routed → accepted → picked_up → completed`
+
+| Stage | Actor | API |
+|-------|-------|-----|
+| Detection | System | POST /telemetry/ingest |
+| Store Approval | Store Manager | POST /alerts/:id/approve |
+| Routing | System | (auto after approve) |
+| Food Bank Response | Food Bank | POST /alerts/:id/respond |
+| Pickup Confirmed | Food Bank | POST /alerts/:id/confirm-pickup |
+
+---
+
+## Role-Based Dashboards
+
+| Role | Route | Accent |
+|------|-------|--------|
+| Admin | `/` | Default |
+| Store Manager | `/store-dashboard/*` | Green |
+| Food Bank Coordinator | `/food-bank-dashboard/*` | Blue |
+
+Each portal uses a Next.js route group with its own layout and sidebar.
+Landing page at `/login` offers role selection (→ Auth0 login redirect after integration).
+
+---
+
+## Auth0 Integration Status
+
+All Auth0 integration points are marked with `TODO: [AUTH0]` in the codebase.
+Search globally with: `grep -r "TODO: \[AUTH0\]"` to find them.
+
+Key integration areas:
+- **Backend middleware:** JWT validation on API routes
+- **Frontend:** `@auth0/nextjs-auth0` user provider and access token passing
+- **Route gating:** Redirect users to role-specific dashboards after login
+- **Data scoping:** Derive store_id / food_bank_id from JWT claims
