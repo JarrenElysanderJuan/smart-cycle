@@ -106,16 +106,6 @@ NODE_ENV=development
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_API_URL=http://localhost:3001
-
-AUTH0_SECRET=9a82847ddcfed90538f90086f3a4a44a632534229388752f7bdcbafd192eb8ac
-AUTH0_BASE_URL=http://localhost:3000/
-APP_BASE_URL=http://localhost:3000/
-AUTH0_DOMAIN=smart-cycle.ca.auth0.com
-AUTH0_ISSUER_BASE_URL=https://smart-cycle.ca.auth0.com/
-AUTH0_CLIENT_ID=3485Q8og08yIwbSEx6C4c28C4bpYTGlp
-AUTH0_CLIENT_SECRET=OKYqpBNU1NfRYXa08kXCCJdDpIoHMS-ZQ-6HYpcenIBYpN7cky10snkKhLQZ02A-
-AUTH0_AUDIENCE=https://api.smart-cycle.com/
-AUTH0_SCOPE=openid profile email
 ```
 
 ### 3. Set up the python virtual environment
