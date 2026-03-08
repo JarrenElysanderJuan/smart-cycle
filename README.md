@@ -125,7 +125,7 @@ Activate it:
 Then, install the requirements:
 
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 4. Run Locally
