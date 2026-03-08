@@ -136,8 +136,8 @@ export default function DemoPage(): React.ReactElement {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-1">🧪 Demo Controls</h1>
+    <div className="fade-in">
+      <h1 className="font-[family-name:var(--font-display)] text-3xl mb-1">Demo Controls</h1>
       <p className="text-[var(--color-text-muted)] text-sm mb-8">
         Walk through the full donation lifecycle: bin → telemetry → alert → food bank
       </p>
@@ -166,16 +166,16 @@ export default function DemoPage(): React.ReactElement {
           customActions={
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => handleSimulate('normal')} disabled={!binId || !!loading}
-                className="px-4 py-2 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:opacity-40 cursor-pointer">
-                📊 Normal (no alert)
+                className="px-4 py-2 rounded-lg text-xs font-medium bg-[var(--color-success)]/10 text-[var(--color-success)] hover:bg-[var(--color-success)]/20 transition-colors disabled:opacity-40 cursor-pointer">
+                Normal (no alert)
               </button>
               <button onClick={() => handleSimulate('ripe')} disabled={!binId || !!loading}
-                className="px-4 py-2 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-40 cursor-pointer">
-                🍌 Ripe (medium alert)
+                className="px-4 py-2 rounded-lg text-xs font-medium bg-[var(--color-warning)]/10 text-[var(--color-warning)] hover:bg-[var(--color-warning)]/20 transition-colors disabled:opacity-40 cursor-pointer">
+                Ripe (medium alert)
               </button>
               <button onClick={() => handleSimulate('critical')} disabled={!binId || !!loading}
-                className="px-4 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-40 cursor-pointer">
-                🔴 Critical (urgent alert)
+                className="px-4 py-2 rounded-lg text-xs font-medium bg-[var(--color-danger)]/10 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/20 transition-colors disabled:opacity-40 cursor-pointer">
+                Critical (urgent alert)
               </button>
             </div>
           }
@@ -196,17 +196,17 @@ export default function DemoPage(): React.ReactElement {
       </div>
 
       {/* Admin shortcut */}
-      <div className="mt-10 rounded-xl border border-purple-500/20 bg-purple-500/5 p-6">
-        <h3 className="text-sm font-semibold text-purple-400 mb-2">👑 Make Yourself Admin</h3>
+      <div className="mt-10 rounded-xl border border-[var(--color-text-light)]/20 bg-[var(--color-surface-elevated)] p-6">
+        <h3 className="text-sm font-semibold text-[var(--color-text)] mb-2">Make Yourself Admin</h3>
         <p className="text-xs text-[var(--color-text-muted)] mb-4">
-          Grant admin role to your account for accessing the admin dashboard at <code>/admin</code>.
+          Grant admin role to your account for accessing the admin dashboard at <code className="bg-[var(--color-surface)] px-1 py-0.5 rounded text-[var(--color-primary)]">/admin</code>.
         </p>
         <button onClick={handleMakeAdmin} disabled={!!loading}
-          className="px-4 py-2 rounded-lg text-xs font-semibold bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors disabled:opacity-40 cursor-pointer">
-          {loading === 'admin' ? 'Assigning...' : '👑 Make Me Admin'}
+          className="px-4 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 transition-colors disabled:opacity-40 cursor-pointer">
+          {loading === 'admin' ? 'Assigning...' : 'Make Me Admin'}
         </button>
         {results['admin'] && (
-          <p className={`mt-2 text-xs ${results['admin'].success ? 'text-emerald-400' : 'text-red-400'}`}>
+          <p className={`mt-2 text-xs ${results['admin'].success ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'}`}>
             {results['admin'].message}
           </p>
         )}
@@ -226,12 +226,12 @@ function DemoStep({
   return (
     <div className={`rounded-xl border p-6 transition-all ${
       completed
-        ? 'border-emerald-500/30 bg-emerald-500/5'
+        ? 'border-[var(--color-success)]/30 bg-[var(--color-success)]/5'
         : 'border-[var(--color-border)] bg-[var(--color-surface)]'
     }`}>
       <div className="flex items-start gap-4">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-          completed ? 'bg-emerald-500 text-white' : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)]'
+          completed ? 'bg-[var(--color-success)] text-white' : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)]'
         }`}>
           {completed ? '✓' : number}
         </div>
@@ -250,7 +250,7 @@ function DemoStep({
 
           {result && (
             <div className={`mt-3 p-3 rounded-lg text-xs ${
-              result.success ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+              result.success ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' : 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]'
             }`}>
               {result.message}
               {result.data && (

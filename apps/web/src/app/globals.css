@@ -1,28 +1,62 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #0a0f1c;
-  --color-surface: #111827;
-  --color-surface-elevated: #1a2332;
-  --color-border: #1f2937;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-primary: #22d3ee;
-  --color-primary-glow: rgba(34, 211, 238, 0.15);
-  --color-success: #34d399;
-  --color-warning: #fbbf24;
-  --color-danger: #f87171;
-  --color-critical: #ef4444;
+  /* Warm off-white backgrounds */
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f5f0eb;
+
+  /* Warm borders */
+  --color-border: #e8e0d8;
+  --color-border-strong: #d4c9bd;
+
+  /* Warm text */
+  --color-text: #1a1612;
+  --color-text-muted: #6b5e52;
+  --color-text-light: #9a8d82;
+
+  /* Brand — sage green */
+  --color-primary: #3d7a5f;
+  --color-primary-light: #e8f2ec;
+  --color-primary-hover: #2f6149;
+
+  /* Accent — terracotta */
+  --color-accent: #c4704b;
+  --color-accent-light: #fdf0ea;
+
+  /* Status colors — warm-tinted */
+  --color-success: #3d7a5f;
+  --color-warning: #c68a2e;
+  --color-danger: #bf4a3a;
+  --color-critical: #a13428;
+
+  /* Sidebar */
+  --color-sidebar-bg: #f2ede8;
+  --color-sidebar-active: #e8f2ec;
 }
 
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
   * {
     box-sizing: border-box;
+  }
+}
+
+/* Smooth page transitions */
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(8px); }
   }
 }

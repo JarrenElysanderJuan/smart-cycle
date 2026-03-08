@@ -6,30 +6,35 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/(store)/store-dashboard/layout": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(store)/store-dashboard/layout.js"
+      "static/chunks/app/page.js"
     ],
-    "/(store)/store-dashboard/camera-demo/page": [
+    "/(food-bank)/food-bank-dashboard/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(store)/store-dashboard/camera-demo/page.js"
+      "static/chunks/app/(food-bank)/food-bank-dashboard/layout.js"
     ],
-    "/(store)/store-dashboard/page": [
+    "/(food-bank)/food-bank-dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(store)/store-dashboard/page.js"
+      "static/chunks/app/(food-bank)/food-bank-dashboard/page.js"
     ],
-    "/(store)/store-dashboard/bins/page": [
+    "/(food-bank)/food-bank-dashboard/donations/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(store)/store-dashboard/bins/page.js"
+      "static/chunks/app/(food-bank)/food-bank-dashboard/donations/page.js"
     ],
-    "/(store)/store-dashboard/alerts/page": [
+    "/(food-bank)/food-bank-dashboard/settings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(store)/store-dashboard/alerts/page.js"
+      "static/chunks/app/(food-bank)/food-bank-dashboard/settings/page.js"
+    ],
+    "/(food-bank)/food-bank-dashboard/inventory/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(food-bank)/food-bank-dashboard/inventory/page.js"
     ]
   }
 }

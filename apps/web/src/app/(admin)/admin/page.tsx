@@ -39,8 +39,11 @@ async function fetchAlerts(): Promise<AlertSummary[]> {
 export const dynamic = 'force-dynamic';
 
 /**
- * Admin Overview — system-wide dashboard with all bins and alerts.
- * Accessible only to admin role (gated by layout).
+ * Admin Overview — Anomaly-first layout
+ *
+ * Instead of 4 equal stat cards, the page leads with a status sentence,
+ * then shows problems (offline bins, pending alerts) prominently,
+ * and pushes "everything OK" stats to the side.
  */
 export default async function AdminOverviewPage(): Promise<React.ReactElement> {
   const [bins, alerts] = await Promise.all([fetchBins(), fetchAlerts()]);
@@ -48,26 +51,37 @@ export default async function AdminOverviewPage(): Promise<React.ReactElement> {
   const onlineBins = bins.filter((b) => b.status === 'online').length;
   const offlineBins = bins.filter((b) => b.status === 'offline').length;
   const pendingAlerts = alerts.length;
+  const hasProblems = offlineBins > 0 || pendingAlerts > 0;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-1">Admin Overview</h1>
-      <p className="text-[var(--color-text-muted)] text-sm mb-8">System-wide bin health and alert summary</p>
+    <div className="fade-in max-w-4xl">
+      {/* Status sentence instead of hero metrics */}
+      <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--color-text)] mb-3">System Status</h1>
+      <p className="text-lg text-[var(--color-text-muted)] mb-10 leading-relaxed">
+        {bins.length === 0 ? (
+          'No bins registered yet. Register stores and add bins to get started.'
+        ) : hasProblems ? (
+          <>
+            <span className="text-[var(--color-text)] font-medium">{onlineBins} of {bins.length}</span> bins online.
+            {offlineBins > 0 && <> <span className="text-[var(--color-danger)] font-medium">{offlineBins} offline.</span></>}
+            {pendingAlerts > 0 && <> <span className="text-[var(--color-warning)] font-medium">{pendingAlerts} alerts</span> need attention.</>}
+          </>
+        ) : (
+          <>All <span className="text-[var(--color-success)] font-medium">{bins.length} bins online</span>. No pending alerts.</>
+        )}
+      </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <StatCard label="Total Bins" value={bins.length} icon="🗑️" />
-        <StatCard label="Online" value={onlineBins} icon="🟢" color="text-emerald-400" />
-        <StatCard label="Offline" value={offlineBins} icon="🔴" color="text-red-400" />
-        <StatCard label="Pending Alerts" value={pendingAlerts} icon="🔔" color="text-amber-400" />
-      </div>
-
+      {/* Problems first — not equal weight to healthy stats */}
       {offlineBins > 0 && (
-        <div className="mb-8 p-4 rounded-xl border border-red-500/30 bg-red-500/5">
-          <h3 className="text-sm font-semibold text-red-400 mb-2">⚠️ {offlineBins} bin{offlineBins > 1 ? 's' : ''} offline</h3>
+        <div className="mb-8">
+          <h2 className="text-sm font-semibold text-[var(--color-danger)] uppercase tracking-wider mb-4">Offline Bins</h2>
           <div className="space-y-2">
             {bins.filter((b) => b.status === 'offline').map((bin) => (
-              <div key={bin.id} className="flex items-center justify-between text-sm">
-                <span className="text-[var(--color-text-muted)]">{bin.label}</span>
+              <div key={bin.id} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-b-0">
+                <div className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-danger)]" />
+                  <span className="font-medium text-[var(--color-text)]">{bin.label}</span>
+                </div>
                 <span className="text-xs text-[var(--color-text-muted)]">
                   Last seen: {bin.last_seen_at ? new Date(bin.last_seen_at).toLocaleString() : 'Never'}
                 </span>
@@ -77,50 +91,59 @@ export default async function AdminOverviewPage(): Promise<React.ReactElement> {
         </div>
       )}
 
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-[var(--color-border)]">
-          <h2 className="text-lg font-semibold">Pending Alerts</h2>
-        </div>
+      {/* Pending alerts — table, not cards */}
+      <div className="mb-10">
+        <h2 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">Pending Alerts</h2>
         {alerts.length === 0 ? (
-          <p className="px-6 py-8 text-center text-[var(--color-text-muted)]">No pending alerts 🎉</p>
+          <p className="text-sm text-[var(--color-text-light)] py-4">No pending alerts — all clear.</p>
         ) : (
-          <div className="divide-y divide-[var(--color-border)]">
-            {alerts.map((alert) => (
-              <div key={alert.id} className="px-6 py-4 flex items-center justify-between hover:bg-[var(--color-surface-elevated)] transition-colors">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase ${
-                      alert.priority === 'critical' ? 'bg-red-500/10 text-red-400' :
-                      alert.priority === 'high' ? 'bg-orange-500/10 text-orange-400' :
-                      alert.priority === 'medium' ? 'bg-amber-500/10 text-amber-400' :
-                      'bg-emerald-500/10 text-emerald-400'
-                    }`}>{alert.priority}</span>
-                    <span className="font-medium">{alert.bins?.label ?? 'Unknown bin'}</span>
-                  </div>
-                  <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                    {alert.estimated_weight_kg} kg • {new Date(alert.created_at).toLocaleString()}
-                  </p>
-                </div>
-                <span className="text-xs px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 font-medium">
-                  {alert.status}
-                </span>
-              </div>
-            ))}
+          <div className="border border-[var(--color-border)] rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)] text-xs uppercase tracking-wider">
+                  <th className="text-left px-5 py-3 font-medium">Bin</th>
+                  <th className="text-left px-5 py-3 font-medium">Priority</th>
+                  <th className="text-right px-5 py-3 font-medium">Weight</th>
+                  <th className="text-right px-5 py-3 font-medium">Created</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-border)]">
+                {alerts.map((alert) => (
+                  <tr key={alert.id} className="hover:bg-[var(--color-surface)] transition-colors">
+                    <td className="px-5 py-3 font-medium text-[var(--color-text)]">{alert.bins?.label ?? 'Unknown'}</td>
+                    <td className="px-5 py-3">
+                      <span className={`text-xs font-semibold uppercase ${
+                        alert.priority === 'critical' ? 'text-[var(--color-critical)]' :
+                        alert.priority === 'high' ? 'text-[var(--color-danger)]' :
+                        alert.priority === 'medium' ? 'text-[var(--color-warning)]' :
+                        'text-[var(--color-success)]'
+                      }`}>{alert.priority}</span>
+                    </td>
+                    <td className="px-5 py-3 text-right text-[var(--color-text-muted)]">{alert.estimated_weight_kg} kg</td>
+                    <td className="px-5 py-3 text-right text-[var(--color-text-muted)]">{new Date(alert.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
-    </div>
-  );
-}
 
-function StatCard({ label, value, icon, color }: {
-  label: string; value: number; icon: string; color?: string;
-}): React.ReactElement {
-  return (
-    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 hover:border-purple-400/30 transition-colors">
-      <div className="flex items-center justify-between mb-3"><span className="text-2xl">{icon}</span></div>
-      <div className={`text-3xl font-bold mb-1 ${color ?? ''}`}>{value}</div>
-      <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">{label}</div>
+      {/* Quick counts — secondary, bottom of page, inline */}
+      <div className="flex items-center gap-10 pt-6 border-t border-[var(--color-border)] text-sm">
+        <div>
+          <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--color-text)]">{bins.length}</span>
+          <span className="text-[var(--color-text-muted)] ml-2">total bins</span>
+        </div>
+        <div>
+          <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--color-success)]">{onlineBins}</span>
+          <span className="text-[var(--color-text-muted)] ml-2">online</span>
+        </div>
+        <div>
+          <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--color-danger)]">{offlineBins}</span>
+          <span className="text-[var(--color-text-muted)] ml-2">offline</span>
+        </div>
+      </div>
     </div>
   );
 }

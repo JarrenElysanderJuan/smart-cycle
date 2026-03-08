@@ -182,10 +182,10 @@ export default function OnboardingPage(): React.ReactElement {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] flex items-center justify-center px-6">
-      <div className="max-w-2xl w-full">
+      <div className="max-w-2xl w-full fade-in">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold mb-2">♻️ Welcome to Smart Cycle</h1>
+          <h1 className="font-[family-name:var(--font-display)] text-3xl mb-2">♻️ Welcome to Smart Cycle</h1>
           <p className="text-[var(--color-text-muted)]">
             {user ? `Hi ${user.name ?? user.email}! Let's set up your account.` : 'Let\'s get you set up.'}
           </p>
@@ -208,8 +208,8 @@ export default function OnboardingPage(): React.ReactElement {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl border border-red-500/30 bg-red-500/5 text-red-400 text-sm">
-            ❌ {error}
+          <div className="mb-6 p-4 rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/5 text-[var(--color-danger)] text-sm">
+            {error}
           </div>
         )}
 
@@ -223,27 +223,27 @@ export default function OnboardingPage(): React.ReactElement {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={() => handleSelectRole('store')}
-                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-left hover:border-emerald-400/40 hover:shadow-lg transition-all group cursor-pointer"
+                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-left hover:border-[var(--color-primary)]/40 hover:shadow-lg transition-all group cursor-pointer"
               >
                 <span className="text-4xl mb-4 block group-hover:scale-110 transition-transform">🏪</span>
-                <h3 className="text-lg font-semibold mb-1">Grocery Store</h3>
+                <h3 className="font-[family-name:var(--font-display)] text-lg mb-1">Grocery Store</h3>
                 <p className="text-sm text-[var(--color-text-muted)]">
                   I manage a store and want to donate surplus food using smart bins
                 </p>
-                <div className="mt-4 text-xs text-emerald-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="mt-4 text-xs text-[var(--color-primary)] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                   → Set up store dashboard
                 </div>
               </button>
               <button
                 onClick={() => handleSelectRole('food_bank')}
-                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-left hover:border-blue-400/40 hover:shadow-lg transition-all group cursor-pointer"
+                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-left hover:border-[var(--color-accent)]/40 hover:shadow-lg transition-all group cursor-pointer"
               >
                 <span className="text-4xl mb-4 block group-hover:scale-110 transition-transform">🏦</span>
-                <h3 className="text-lg font-semibold mb-1">Food Bank</h3>
+                <h3 className="font-[family-name:var(--font-display)] text-lg mb-1">Food Bank</h3>
                 <p className="text-sm text-[var(--color-text-muted)]">
                   I coordinate a food bank and want to receive donations from nearby stores
                 </p>
-                <div className="mt-4 text-xs text-blue-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="mt-4 text-xs text-[var(--color-accent)] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                   → Set up food bank dashboard
                 </div>
               </button>
@@ -284,8 +284,8 @@ export default function OnboardingPage(): React.ReactElement {
             </Section>
 
             <button type="submit" disabled={loading}
-              className="w-full py-3 px-6 rounded-xl font-semibold text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              {loading ? 'Registering...' : '🏪 Register Store & Continue'}
+              className="w-full py-3 px-6 rounded-xl font-semibold text-sm bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+              {loading ? 'Registering...' : 'Register Store & Continue'}
             </button>
           </form>
         )}
@@ -335,8 +335,8 @@ export default function OnboardingPage(): React.ReactElement {
             </Section>
 
             <button type="submit" disabled={loading}
-              className="w-full py-3 px-6 rounded-xl font-semibold text-sm bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              {loading ? 'Registering...' : '🏦 Register Food Bank & Continue'}
+              className="w-full py-3 px-6 rounded-xl font-semibold text-sm bg-[var(--color-accent)] text-white hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+              {loading ? 'Registering...' : 'Register Food Bank & Continue'}
             </button>
           </form>
         )}
@@ -345,12 +345,12 @@ export default function OnboardingPage(): React.ReactElement {
         {step === 3 && (
           <div className="text-center">
             <div className="text-6xl mb-6">🎉</div>
-            <h2 className="text-2xl font-bold mb-2">You&apos;re All Set!</h2>
+            <h2 className="font-[family-name:var(--font-display)] text-2xl mb-2">You&apos;re All Set!</h2>
             <p className="text-[var(--color-text-muted)] mb-8">
               Your {businessType === 'store' ? 'store' : 'food bank'} has been registered and your account is linked.
             </p>
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 mb-8 text-left">
-              <p className="text-sm text-emerald-400 font-medium mb-1">✅ Account Ready</p>
+            <div className="rounded-xl border border-[var(--color-success)]/30 bg-[var(--color-success)]/5 p-4 mb-8 text-left">
+              <p className="text-sm text-[var(--color-success)] font-medium mb-1">✅ Account Ready</p>
               <p className="text-xs text-[var(--color-text-muted)]">
                 Your <strong>{businessType === 'store' ? 'store_manager' : 'food_bank_coordinator'}</strong> role
                 has been saved. Click below to access your dashboard.
@@ -360,9 +360,9 @@ export default function OnboardingPage(): React.ReactElement {
               onClick={() => {
                 window.location.href = businessType === 'store' ? '/store-dashboard' : '/food-bank-dashboard';
               }}
-              className="px-8 py-3.5 rounded-2xl text-base font-semibold bg-[var(--color-primary)] text-white hover:opacity-90 transition-all shadow-lg shadow-[var(--color-primary)]/20 cursor-pointer"
+              className="px-8 py-3.5 rounded-2xl text-base font-semibold bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors cursor-pointer"
             >
-              {businessType === 'store' ? '🏪 Go to Store Dashboard' : '🏦 Go to Food Bank Dashboard'}
+              {businessType === 'store' ? 'Go to Store Dashboard' : 'Go to Food Bank Dashboard'}
             </button>
           </div>
         )}
@@ -387,7 +387,7 @@ function Field({ label, value, onChange, type = 'text', required, placeholder }:
   return (
     <div>
       <label className="block text-xs text-[var(--color-text-muted)] mb-1">
-        {label} {required && <span className="text-red-400">*</span>}
+        {label} {required && <span className="text-[var(--color-danger)]">*</span>}
       </label>
       <input
         type={type}

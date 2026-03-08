@@ -33,10 +33,10 @@ export default async function BinsPage(): Promise<React.ReactElement> {
   const offlineCount = bins.filter((b) => b.status === 'offline').length;
 
   return (
-    <div>
+    <div className="fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold">Bins</h1>
+          <h1 className="font-[family-name:var(--font-display)] text-3xl mb-1">All Bins</h1>
           <p className="text-[var(--color-text-muted)] text-sm mt-1">
             {bins.length} bins registered • {onlineCount} online • {offlineCount} offline
           </p>
@@ -55,7 +55,7 @@ export default async function BinsPage(): Promise<React.ReactElement> {
             <Link
               key={bin.id}
               href={`/admin/bins/${bin.id}`}
-              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 hover:border-[var(--color-primary)]/40 hover:shadow-lg hover:shadow-[var(--color-primary-glow)] transition-all duration-300"
+              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 hover:border-[var(--color-primary)]/30 transition-colors"
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="font-semibold">{bin.label}</span>

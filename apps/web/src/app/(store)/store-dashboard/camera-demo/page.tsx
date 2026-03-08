@@ -80,9 +80,9 @@ export default function CameraDemoPage(): React.ReactElement {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-1">Live Camera Demo</h1>
-      <p className="text-[var(--color-text-muted)] text-sm mb-8">Test the partner's AI vision integration.</p>
+    <div className="fade-in">
+      <h1 className="font-[family-name:var(--font-display)] text-3xl mb-1">Live Camera Demo</h1>
+      <p className="text-[var(--color-text-muted)] text-sm mb-8">Test the partner&apos;s AI vision integration.</p>
 
       {loading ? (
         <p className="text-[var(--color-text-muted)]">Loading...</p>
@@ -92,7 +92,7 @@ export default function CameraDemoPage(): React.ReactElement {
           <button
             onClick={handleCreateBin}
             disabled={acting === 'create'}
-            className="px-6 py-3 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50"
+            className="px-6 py-3 rounded-lg font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50 cursor-pointer"
           >
             {acting === 'create' ? 'Creating...' : '+ Create Camera Bin'}
           </button>
@@ -102,13 +102,13 @@ export default function CameraDemoPage(): React.ReactElement {
           {bins.map(bin => (
             <div key={bin.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 flex flex-col items-center">
               <div className="text-6xl mb-4">📷</div>
-              <h3 className="font-bold text-lg mb-1">{bin.label}</h3>
+              <h3 className="font-[family-name:var(--font-display)] text-lg mb-1">{bin.label}</h3>
               <p className="text-sm text-[var(--color-text-muted)] mb-6">Linked to external IP webcam feed</p>
               
               <button
                 onClick={() => handleCapture(bin.id)}
                 disabled={acting === bin.id}
-                className="px-6 py-3 w-full max-w-sm rounded-xl font-medium bg-[var(--color-text)] text-[var(--color-bg)] hover:scale-[1.02] transition-all disabled:opacity-50 flex justify-center items-center gap-2 shadow-lg hover:shadow-xl disabled:hover:scale-100"
+                className="px-6 py-3 w-full max-w-sm rounded-xl font-medium bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 transition-all disabled:opacity-50 flex justify-center items-center gap-2 disabled:hover:scale-100 cursor-pointer"
               >
                 {acting === bin.id ? (
                   <>
@@ -119,9 +119,9 @@ export default function CameraDemoPage(): React.ReactElement {
               </button>
 
               {result && (
-                <div className={`mt-6 w-full max-w-sm p-4 rounded-lg text-sm border shadow-sm ${result.error ? 'border-red-500/20 bg-red-500/5' : 'border-emerald-500/20 bg-emerald-500/5'}`}>
+                <div className={`mt-6 w-full max-w-sm p-4 rounded-lg text-sm border ${result.error ? 'border-[var(--color-danger)]/20 bg-[var(--color-danger)]/5' : 'border-[var(--color-success)]/20 bg-[var(--color-success)]/5'}`}>
                   {result.error ? (
-                    <p className="text-red-400 font-medium whitespace-pre-wrap">{result.error}</p>
+                    <p className="text-[var(--color-danger)] font-medium whitespace-pre-wrap">{result.error}</p>
                   ) : (
                     <div className="space-y-2 text-[var(--color-text)]">
                        <p className="flex justify-between items-center pb-2 border-b border-[var(--color-border)]">
@@ -134,12 +134,12 @@ export default function CameraDemoPage(): React.ReactElement {
                        </p>
                        <p className="flex justify-between items-center">
                          <span className="font-medium text-[var(--color-text-muted)]">Action Taken:</span> 
-                         <span className={result.alert_generated ? 'text-amber-500 font-bold' : 'text-emerald-500 font-bold'}>
+                         <span className={result.alert_generated ? 'text-[var(--color-warning)] font-bold' : 'text-[var(--color-success)] font-bold'}>
                            {result.alert_generated ? 'Alert Generated🚨' : 'No action needed ✅'}
                          </span>
                        </p>
                        {result.alert_priority && (
-                         <p className="flex justify-between items-center text-xs text-amber-500/80">
+                         <p className="flex justify-between items-center text-xs text-[var(--color-warning)]">
                            <span>Priority classification:</span>
                            <span className="uppercase">{result.alert_priority}</span>
                          </p>

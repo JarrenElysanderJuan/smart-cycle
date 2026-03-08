@@ -6,8 +6,8 @@
  */
 export default function StoreSettingsPage(): React.ReactElement {
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-1">Store Settings</h1>
+    <div className="fade-in">
+      <h1 className="font-[family-name:var(--font-display)] text-3xl mb-1">Store Settings</h1>
       <p className="text-[var(--color-text-muted)] text-sm mb-8">Manage your store information</p>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">

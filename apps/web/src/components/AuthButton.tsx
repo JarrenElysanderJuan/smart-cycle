@@ -19,9 +19,9 @@ export default function AuthButton(): React.ReactElement {
     return (
       <button
         onClick={() => { window.location.href = '/auth/login'; }}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity cursor-pointer"
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors cursor-pointer"
       >
-        🔐 Log In
+        Log In
       </button>
     );
   }
@@ -36,11 +36,11 @@ export default function AuthButton(): React.ReactElement {
             className="h-8 w-8 rounded-full border border-[var(--color-border)]"
           />
         )}
-        <span className="text-sm font-medium truncate max-w-[120px]">{user.name}</span>
+        <span className="text-sm font-medium truncate max-w-[120px] text-[var(--color-text)]">{user.name}</span>
       </div>
       <button
         onClick={() => { window.location.href = '/auth/logout'; }}
-        className="text-xs text-[var(--color-text-muted)] hover:text-red-400 transition-colors cursor-pointer"
+        className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-danger)] transition-colors cursor-pointer"
       >
         Logout
       </button>
