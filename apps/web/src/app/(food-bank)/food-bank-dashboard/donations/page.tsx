@@ -65,10 +65,10 @@ export default function DonationsPage(): React.ReactElement {
   const handleRespond = async (alertId: string, response: 'accepted' | 'declined'): Promise<void> => {
     setActing(alertId);
     try {
-      await fetch(`${API_BASE_URL}/api/v1/alerts/${alertId}/respond`, {
+      await fetch(`${API_BASE_URL}/api/v1/demo/respond-alert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ response, food_bank_id: foodBankId }),
+        body: JSON.stringify({ alert_id: alertId, response, food_bank_id: foodBankId }),
       });
       await fetchDonations();
     } catch { /* empty */ }
@@ -78,10 +78,10 @@ export default function DonationsPage(): React.ReactElement {
   const handleConfirmPickup = async (alertId: string): Promise<void> => {
     setActing(alertId);
     try {
-      await fetch(`${API_BASE_URL}/api/v1/alerts/${alertId}/confirm-pickup`, {
+      await fetch(`${API_BASE_URL}/api/v1/demo/confirm-pickup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ food_bank_id: foodBankId }),
+        body: JSON.stringify({ alert_id: alertId, food_bank_id: foodBankId }),
       });
       await fetchDonations();
     } catch { /* empty */ }

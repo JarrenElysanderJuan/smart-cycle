@@ -300,6 +300,120 @@ router.post('/approve-alert', async (req: Request, res: Response): Promise<void>
 });
 
 /**
+ * POST /api/v1/demo/respond-alert
+ *
+ * Food bank accepts or declines a donation alert.
+ * No JWT required — for demo use only.
+ */
+router.post('/respond-alert', async (req: Request, res: Response): Promise<void> => {
+  const { alert_id, food_bank_id, response } = req.body as {
+    alert_id?: string; food_bank_id?: string; response?: 'accepted' | 'declined';
+  };
+
+  if (!alert_id || !food_bank_id || !response) {
+    res.status(400).json({ error: 'alert_id, food_bank_id, and response are required' });
+    return;
+  }
+
+  // Update the recipient's response
+  const { error: recipErr } = await supabaseAdmin
+    .from('donation_alert_recipients')
+    .update({
+      response,
+      responded_at: new Date().toISOString(),
+    })
+    .eq('donation_alert_id', alert_id)
+    .eq('food_bank_id', food_bank_id);
+
+  if (recipErr) {
+    console.error('Failed to update recipient response:', recipErr);
+    res.status(500).json({ error: recipErr.message });
+    return;
+  }
+
+  // If accepted, update the alert status to 'accepted'
+  if (response === 'accepted') {
+    await supabaseAdmin
+      .from('donation_alerts')
+      .update({ status: 'accepted' })
+      .eq('id', alert_id);
+  }
+
+  console.log(`📬 Food bank ${food_bank_id} ${response} alert ${alert_id}`);
+
+  res.json({
+    message: `Alert ${response}`,
+    alert_id,
+    food_bank_id,
+    response,
+  });
+});
+
+/**
+ * POST /api/v1/demo/confirm-pickup
+ *
+ * Food bank confirms physical pickup of the donation.
+ * Transitions: accepted → completed, updates food bank inventory.
+ * No JWT required — for demo use only.
+ */
+router.post('/confirm-pickup', async (req: Request, res: Response): Promise<void> => {
+  const { alert_id, food_bank_id } = req.body as { alert_id?: string; food_bank_id?: string };
+
+  if (!alert_id || !food_bank_id) {
+    res.status(400).json({ error: 'alert_id and food_bank_id are required' });
+    return;
+  }
+
+  // Verify the alert
+  const { data: alert } = await supabaseAdmin
+    .from('donation_alerts')
+    .select('id, status, estimated_weight_kg')
+    .eq('id', alert_id)
+    .single();
+
+  if (!alert) {
+    res.status(404).json({ error: 'Alert not found' });
+    return;
+  }
+
+  if (alert.status !== 'accepted') {
+    res.status(409).json({ error: `Alert is '${alert.status}', must be 'accepted' first` });
+    return;
+  }
+
+  const now = new Date().toISOString();
+
+  // Mark alert as completed
+  await supabaseAdmin
+    .from('donation_alerts')
+    .update({ status: 'completed', picked_up_at: now, completed_at: now })
+    .eq('id', alert_id);
+
+  // Update food bank inventory
+  const { data: foodBank } = await supabaseAdmin
+    .from('food_banks')
+    .select('current_inventory_kg')
+    .eq('id', food_bank_id)
+    .single();
+
+  if (foodBank) {
+    const newInventory = (foodBank.current_inventory_kg ?? 0) + alert.estimated_weight_kg;
+    await supabaseAdmin
+      .from('food_banks')
+      .update({ current_inventory_kg: newInventory })
+      .eq('id', food_bank_id);
+  }
+
+  console.log(`🚚 Pickup confirmed: alert ${alert_id}, +${alert.estimated_weight_kg} kg to food bank ${food_bank_id}`);
+
+  res.json({
+    message: 'Pickup confirmed — donation completed',
+    alert_id,
+    added_kg: alert.estimated_weight_kg,
+  });
+});
+
+/**
  * POST /api/v1/demo/make-admin
  *
  * Sets a user's role to admin in the user_profiles table.

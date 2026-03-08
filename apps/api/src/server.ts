@@ -38,11 +38,13 @@ app.use('/api/v1/organizations', organizationsRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/demo', demoRouter);
 
+// Read-only lifecycle endpoints (no JWT needed for dashboard views)
+app.use('/api/v1', lifecycleRouter);  // stores/:id/alerts, food-banks/:id/donations
+
 // ---------------------------------------------------------------------------
 // Protected Routes (JWT required)
 // ---------------------------------------------------------------------------
 app.use('/api/v1/alerts', checkJwt, lifecycleRouter);  // approve, confirm-pickup
-app.use('/api/v1', checkJwt, lifecycleRouter);          // stores/:id/bins, stores/:id/alerts, food-banks/:id/donations
 
 // Health check — no auth required
 app.get('/health', (_req, res) => {

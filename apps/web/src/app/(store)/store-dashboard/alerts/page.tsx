@@ -62,10 +62,10 @@ export default function StoreAlertsPage(): React.ReactElement {
   const handleApprove = async (alertId: string): Promise<void> => {
     setApproving(alertId);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/alerts/${alertId}/approve`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/demo/approve-alert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ alert_id: alertId }),
       });
       if (res.ok) {
         await fetchAlerts();

@@ -85,6 +85,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(admin)/admin/alerts/page.js"
+    ],
+    "/(food-bank)/food-bank-dashboard/settings/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(food-bank)/food-bank-dashboard/settings/page.js"
     ]
   }
 }
