@@ -4,6 +4,6 @@
   "/(food-bank)/food-bank-dashboard/donations/page": "app/(food-bank)/food-bank-dashboard/donations/page.js",
   "/(store)/store-dashboard/demo/page": "app/(store)/store-dashboard/demo/page.js",
   "/(store)/store-dashboard/alerts/page": "app/(store)/store-dashboard/alerts/page.js",
-  "/(store)/store-dashboard/bins/page": "app/(store)/store-dashboard/bins/page.js",
-  "/(store)/store-dashboard/page": "app/(store)/store-dashboard/page.js"
+  "/(food-bank)/food-bank-dashboard/settings/page": "app/(food-bank)/food-bank-dashboard/settings/page.js",
+  "/(food-bank)/food-bank-dashboard/inventory/page": "app/(food-bank)/food-bank-dashboard/inventory/page.js"
 }
