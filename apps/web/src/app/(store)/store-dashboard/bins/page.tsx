@@ -1,21 +1,22 @@
+import { getUserClaims } from '@/lib/auth';
 import { API_BASE_URL } from '@/lib/supabase';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Store Bins Page — shows bins belonging to this store.
- * TODO: [AUTH0] Scope by authenticated user's store_id.
+ * Uses store_id from Auth0 session claims.
  */
-const DEMO_STORE_ID = 'c0000000-0000-0000-0000-000000000001';
 
 interface BinSummary {
   id: string; label: string; status: string; last_seen_at: string | null;
   store_address: string | null; location_description: string | null;
 }
 
-async function fetchBins(): Promise<BinSummary[]> {
+async function fetchBins(storeId: string): Promise<BinSummary[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/stores/${DEMO_STORE_ID}/bins`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE_URL}/api/v1/stores/${storeId}/bins`, { cache: 'no-store' });
     if (!res.ok) return [];
     const json = await res.json() as { data: BinSummary[] };
     return json.data;
@@ -23,7 +24,18 @@ async function fetchBins(): Promise<BinSummary[]> {
 }
 
 export default async function StoreBinsPage(): Promise<React.ReactElement> {
-  const bins = await fetchBins();
+  const claims = await getUserClaims();
+  if (!claims?.storeId) {
+    return (
+      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-8 text-center mt-8">
+        <p className="text-4xl mb-4">🏪</p>
+        <h2 className="text-lg font-semibold text-amber-400 mb-2">No Store Assigned</h2>
+        <p className="text-sm text-[var(--color-text-muted)]">Contact your administrator to assign a store to your profile.</p>
+      </div>
+    );
+  }
+
+  const bins = await fetchBins(claims.storeId);
 
   const statusDot: Record<string, string> = {
     online: 'bg-emerald-400', offline: 'bg-red-400', maintenance: 'bg-amber-400',

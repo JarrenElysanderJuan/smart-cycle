@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { API_BASE_URL } from '@/lib/supabase';
 
 /**
- * Incoming Donations Page
+ * Incoming Donations Page — client component.
  *
- * Shows donation alerts routed to this food bank. Accept/Decline + Confirm Pickup.
- * TODO: [AUTH0] Scope by authenticated user's food_bank_id.
+ * Reads food_bank_id from Auth0 user claims.
  */
-
-// TODO: [AUTH0] Replace with value from user session
-const DEMO_FOOD_BANK_ID = 'd0000000-0000-0000-0000-000000000001';
+const CLAIMS_NAMESPACE = 'https://smart-cycle.com';
 
 interface Donation {
   id: string;
@@ -31,13 +29,16 @@ interface Donation {
 }
 
 export default function DonationsPage(): React.ReactElement {
+  const { user } = useUser();
+  const foodBankId = user?.[`${CLAIMS_NAMESPACE}/food_bank_id`] as string | undefined;
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
 
   const fetchDonations = async (): Promise<void> => {
+    if (!foodBankId) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/food-banks/${DEMO_FOOD_BANK_ID}/donations`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/food-banks/${foodBankId}/donations`);
       if (res.ok) {
         const json = await res.json() as { data: Donation[] };
         setDonations(json.data);
@@ -46,7 +47,7 @@ export default function DonationsPage(): React.ReactElement {
     setLoading(false);
   };
 
-  useEffect(() => { fetchDonations(); }, []);
+  useEffect(() => { fetchDonations(); }, [foodBankId]);
 
   const handleRespond = async (alertId: string, response: 'accepted' | 'declined'): Promise<void> => {
     setActing(alertId);
@@ -54,7 +55,7 @@ export default function DonationsPage(): React.ReactElement {
       await fetch(`${API_BASE_URL}/api/v1/alerts/${alertId}/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ response, food_bank_id: DEMO_FOOD_BANK_ID }),
+        body: JSON.stringify({ response, food_bank_id: foodBankId }),
       });
       await fetchDonations();
     } catch { /* empty */ }
@@ -67,7 +68,7 @@ export default function DonationsPage(): React.ReactElement {
       await fetch(`${API_BASE_URL}/api/v1/alerts/${alertId}/confirm-pickup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ food_bank_id: DEMO_FOOD_BANK_ID }),
+        body: JSON.stringify({ food_bank_id: foodBankId }),
       });
       await fetchDonations();
     } catch { /* empty */ }
@@ -132,7 +133,6 @@ export default function DonationsPage(): React.ReactElement {
                   {alert.bins?.store_address && <span>📍 {alert.bins.store_address}</span>}
                 </div>
 
-                {/* Action buttons */}
                 {donation.response === 'pending' && (
                   <div className="flex gap-3 pt-3 border-t border-[var(--color-border)]">
                     <button
@@ -152,7 +152,6 @@ export default function DonationsPage(): React.ReactElement {
                   </div>
                 )}
 
-                {/* Confirm pickup (after accepting) */}
                 {donation.response === 'accepted' && alert.status === 'accepted' && (
                   <div className="flex gap-3 pt-3 border-t border-[var(--color-border)]">
                     <button
@@ -165,7 +164,6 @@ export default function DonationsPage(): React.ReactElement {
                   </div>
                 )}
 
-                {/* Completed */}
                 {alert.status === 'completed' && (
                   <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
                     <p className="text-sm text-emerald-400">✅ Pickup confirmed — {alert.estimated_weight_kg} kg added to inventory</p>

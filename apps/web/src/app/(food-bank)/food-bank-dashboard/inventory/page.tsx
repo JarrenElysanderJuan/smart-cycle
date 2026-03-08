@@ -1,17 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { API_BASE_URL } from '@/lib/supabase';
 
 /**
- * Food Bank Inventory Page
- *
- * Shows current inventory with update form and accepted donation history.
- * TODO: [AUTH0] Scope by authenticated user's food_bank_id.
+ * Food Bank Inventory Page — client component.
+ * Reads food_bank_id from Auth0 user claims.
  */
-
-// TODO: [AUTH0] Replace with value from user session
-const DEMO_FOOD_BANK_ID = 'd0000000-0000-0000-0000-000000000001';
+const CLAIMS_NAMESPACE = 'https://smart-cycle.com';
 
 interface FoodBankProfile {
   id: string; name: string; capacity_kg: number | null;
@@ -19,13 +16,16 @@ interface FoodBankProfile {
 }
 
 export default function InventoryPage(): React.ReactElement {
+  const { user } = useUser();
+  const foodBankId = user?.[`${CLAIMS_NAMESPACE}/food_bank_id`] as string | undefined;
   const [profile, setProfile] = useState<FoodBankProfile | null>(null);
   const [newInventory, setNewInventory] = useState('');
   const [saving, setSaving] = useState(false);
 
   const fetchProfile = async (): Promise<void> => {
+    if (!foodBankId) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/food-banks/${DEMO_FOOD_BANK_ID}`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/food-banks/${foodBankId}`);
       if (res.ok) {
         const json = await res.json() as { data: FoodBankProfile };
         setProfile(json.data);
@@ -34,12 +34,13 @@ export default function InventoryPage(): React.ReactElement {
     } catch { /* empty */ }
   };
 
-  useEffect(() => { fetchProfile(); }, []);
+  useEffect(() => { fetchProfile(); }, [foodBankId]);
 
   const handleUpdate = async (): Promise<void> => {
+    if (!foodBankId) return;
     setSaving(true);
     try {
-      await fetch(`${API_BASE_URL}/api/v1/food-banks/${DEMO_FOOD_BANK_ID}`, {
+      await fetch(`${API_BASE_URL}/api/v1/food-banks/${foodBankId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ current_inventory_kg: Number(newInventory) }),
@@ -59,7 +60,6 @@ export default function InventoryPage(): React.ReactElement {
       <p className="text-[var(--color-text-muted)] text-sm mb-8">Track and update your storage</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Current status */}
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
           <h2 className="text-lg font-semibold mb-4">Current Inventory</h2>
           <div className="text-4xl font-bold text-blue-400 mb-2">{inventory} kg</div>
@@ -76,7 +76,6 @@ export default function InventoryPage(): React.ReactElement {
           </div>
         </div>
 
-        {/* Update form */}
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
           <h2 className="text-lg font-semibold mb-4">Update Inventory</h2>
           <p className="text-sm text-[var(--color-text-muted)] mb-4">

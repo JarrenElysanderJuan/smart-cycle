@@ -1,17 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { API_BASE_URL } from '@/lib/supabase';
 
 /**
- * Store Alerts Page
+ * Store Alerts Page — client component.
  *
- * Shows alerts from this store's bins with Approve Donation button.
- * TODO: [AUTH0] Scope by authenticated user's store_id.
+ * The store_id comes from the user's Auth0 claims (injected by the
+ * Post-Login Action). We read it from the client-side user object.
  */
-
-// TODO: [AUTH0] Replace with value from user session
-const DEMO_STORE_ID = 'c0000000-0000-0000-0000-000000000001';
+const CLAIMS_NAMESPACE = 'https://smart-cycle.com';
 
 interface Alert {
   id: string;
@@ -28,13 +27,16 @@ interface Alert {
 }
 
 export default function StoreAlertsPage(): React.ReactElement {
+  const { user } = useUser();
+  const storeId = user?.[`${CLAIMS_NAMESPACE}/store_id`] as string | undefined;
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState<string | null>(null);
 
   const fetchAlerts = async (): Promise<void> => {
+    if (!storeId) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/stores/${DEMO_STORE_ID}/alerts`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/stores/${storeId}/alerts`);
       if (res.ok) {
         const json = await res.json() as { data: Alert[] };
         setAlerts(json.data);
@@ -43,7 +45,7 @@ export default function StoreAlertsPage(): React.ReactElement {
     setLoading(false);
   };
 
-  useEffect(() => { fetchAlerts(); }, []);
+  useEffect(() => { fetchAlerts(); }, [storeId]);
 
   const handleApprove = async (alertId: string): Promise<void> => {
     setApproving(alertId);
@@ -51,13 +53,10 @@ export default function StoreAlertsPage(): React.ReactElement {
       const res = await fetch(`${API_BASE_URL}/api/v1/alerts/${alertId}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          // TODO: [AUTH0] user_id will come from JWT
-          user_id: '00000000-0000-0000-0000-000000000000',
-        }),
+        body: JSON.stringify({}),
       });
       if (res.ok) {
-        await fetchAlerts(); // refresh
+        await fetchAlerts();
       }
     } catch { /* empty */ }
     setApproving(null);
@@ -110,7 +109,6 @@ export default function StoreAlertsPage(): React.ReactElement {
                 <span>⏰ Expires: {new Date(alert.expires_at).toLocaleString()}</span>
               </div>
 
-              {/* Recipients (if routed) */}
               {alert.donation_alert_recipients.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
                   <p className="text-xs text-[var(--color-text-muted)] mb-2">Routed to:</p>
@@ -124,7 +122,6 @@ export default function StoreAlertsPage(): React.ReactElement {
                 </div>
               )}
 
-              {/* Approve button */}
               {alert.status === 'pending' && (
                 <div className="mt-4 pt-3 border-t border-[var(--color-border)]">
                   <button

@@ -1,4 +1,6 @@
+import { getUserClaims } from '@/lib/auth';
 import { API_BASE_URL } from '@/lib/supabase';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,11 +8,8 @@ export const dynamic = 'force-dynamic';
  * Food Bank Overview Page
  *
  * Capacity gauge, demand stats, and pending donation count.
- * TODO: [AUTH0] Scope by authenticated user's food_bank_id from JWT claims.
+ * Uses food_bank_id from Auth0 session claims.
  */
-
-// TODO: [AUTH0] Replace with value from user session
-const DEMO_FOOD_BANK_ID = 'd0000000-0000-0000-0000-000000000001';
 
 interface FoodBankProfile {
   id: string; name: string; capacity_kg: number | null;
@@ -23,18 +22,18 @@ interface DonationRecipient {
   donation_alerts: { id: string; status: string; estimated_weight_kg: number } | null;
 }
 
-async function fetchProfile(): Promise<FoodBankProfile | null> {
+async function fetchProfile(foodBankId: string): Promise<FoodBankProfile | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/food-banks/${DEMO_FOOD_BANK_ID}`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE_URL}/api/v1/food-banks/${foodBankId}`, { cache: 'no-store' });
     if (!res.ok) return null;
     const json = await res.json() as { data: FoodBankProfile };
     return json.data;
   } catch { return null; }
 }
 
-async function fetchDonations(): Promise<DonationRecipient[]> {
+async function fetchDonations(foodBankId: string): Promise<DonationRecipient[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/food-banks/${DEMO_FOOD_BANK_ID}/donations`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE_URL}/api/v1/food-banks/${foodBankId}/donations`, { cache: 'no-store' });
     if (!res.ok) return [];
     const json = await res.json() as { data: DonationRecipient[] };
     return json.data;
@@ -42,7 +41,26 @@ async function fetchDonations(): Promise<DonationRecipient[]> {
 }
 
 export default async function FoodBankOverviewPage(): Promise<React.ReactElement> {
-  const [profile, donations] = await Promise.all([fetchProfile(), fetchDonations()]);
+  const claims = await getUserClaims();
+  if (!claims?.foodBankId) {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold mb-1">Food Bank Overview</h1>
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-8 text-center mt-8">
+          <p className="text-4xl mb-4">🏦</p>
+          <h2 className="text-lg font-semibold text-amber-400 mb-2">No Food Bank Assigned</h2>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            Your account does not have a food bank linked yet. Contact your administrator to assign one to your profile.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const [profile, donations] = await Promise.all([
+    fetchProfile(claims.foodBankId),
+    fetchDonations(claims.foodBankId),
+  ]);
 
   const capacity = profile?.capacity_kg ?? 0;
   const inventory = profile?.current_inventory_kg ?? 0;
@@ -64,7 +82,6 @@ export default async function FoodBankOverviewPage(): Promise<React.ReactElement
         <StatCard label="Accepted" value={String(acceptedDonations)} icon="✅" color="text-emerald-400" />
       </div>
 
-      {/* Capacity Gauge */}
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 mb-8">
         <h2 className="text-lg font-semibold mb-4">Storage Capacity</h2>
         <div className="w-full bg-[var(--color-bg)] rounded-full h-6 overflow-hidden">
@@ -81,7 +98,6 @@ export default async function FoodBankOverviewPage(): Promise<React.ReactElement
         </div>
       </div>
 
-      {/* Quick stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
           <h3 className="text-sm font-medium text-[var(--color-text-muted)] mb-1">Weekly Demand</h3>

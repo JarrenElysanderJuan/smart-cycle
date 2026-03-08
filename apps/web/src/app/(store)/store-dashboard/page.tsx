@@ -1,4 +1,6 @@
+import { getUserClaims } from '@/lib/auth';
 import { API_BASE_URL } from '@/lib/supabase';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,11 +8,8 @@ export const dynamic = 'force-dynamic';
  * Store Manager Overview Page
  *
  * Shows summary stats and pending alerts that need approval.
- * TODO: [AUTH0] Scope by authenticated user's store_id from JWT claims.
+ * Uses the store_id from the Auth0 session claims.
  */
-
-// TODO: [AUTH0] Replace hardcoded storeId with value from user session
-const DEMO_STORE_ID = 'c0000000-0000-0000-0000-000000000001';
 
 interface BinSummary { id: string; label: string; status: string; last_seen_at: string | null; }
 interface AlertSummary {
@@ -18,18 +17,18 @@ interface AlertSummary {
   created_at: string; bins: { label: string } | null;
 }
 
-async function fetchStoreBins(): Promise<BinSummary[]> {
+async function fetchStoreBins(storeId: string): Promise<BinSummary[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/stores/${DEMO_STORE_ID}/bins`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE_URL}/api/v1/stores/${storeId}/bins`, { cache: 'no-store' });
     if (!res.ok) return [];
     const json = await res.json() as { data: BinSummary[] };
     return json.data;
   } catch { return []; }
 }
 
-async function fetchStoreAlerts(): Promise<AlertSummary[]> {
+async function fetchStoreAlerts(storeId: string): Promise<AlertSummary[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/stores/${DEMO_STORE_ID}/alerts`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE_URL}/api/v1/stores/${storeId}/alerts`, { cache: 'no-store' });
     if (!res.ok) return [];
     const json = await res.json() as { data: AlertSummary[] };
     return json.data;
@@ -37,7 +36,27 @@ async function fetchStoreAlerts(): Promise<AlertSummary[]> {
 }
 
 export default async function StoreOverviewPage(): Promise<React.ReactElement> {
-  const [bins, alerts] = await Promise.all([fetchStoreBins(), fetchStoreAlerts()]);
+  const claims = await getUserClaims();
+
+  if (!claims?.storeId) {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold mb-1">Store Overview</h1>
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-8 text-center mt-8">
+          <p className="text-4xl mb-4">🏪</p>
+          <h2 className="text-lg font-semibold text-amber-400 mb-2">No Store Assigned</h2>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            Your account does not have a store linked yet. Contact your administrator to assign a store to your profile.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const [bins, alerts] = await Promise.all([
+    fetchStoreBins(claims.storeId),
+    fetchStoreAlerts(claims.storeId),
+  ]);
 
   const onlineBins = bins.filter(b => b.status === 'online').length;
   const offlineBins = bins.filter(b => b.status === 'offline').length;
@@ -56,7 +75,6 @@ export default async function StoreOverviewPage(): Promise<React.ReactElement> {
         <StatCard label="Needs Approval" value={pendingAlerts} icon="⏳" color="text-amber-400" />
       </div>
 
-      {/* Pending alerts that need store manager approval */}
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden mb-8">
         <div className="px-6 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
           <h2 className="text-lg font-semibold">Alerts Needing Approval</h2>
@@ -91,7 +109,6 @@ export default async function StoreOverviewPage(): Promise<React.ReactElement> {
         )}
       </div>
 
-      {/* Recently approved / routed */}
       {approvedAlerts > 0 && (
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
           <p className="text-sm text-emerald-400">✅ {approvedAlerts} alert{approvedAlerts > 1 ? 's' : ''} approved and routed to food banks</p>

@@ -1,215 +1,225 @@
-import { API_BASE_URL } from '@/lib/supabase';
+import Link from 'next/link';
+import { getUserClaims } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
-interface BinSummary {
-  id: string;
-  label: string;
-  status: string;
-  last_seen_at: string | null;
-  store_address: string | null;
-  organization_id: string;
-}
+/**
+ * Landing Page
+ *
+ * Public-facing hero page for Smart Cycle.
+ * If already logged in, redirects to the appropriate dashboard.
+ */
+export default async function LandingPage(): Promise<React.ReactElement> {
+  const claims = await getUserClaims();
 
-interface AlertSummary {
-  id: string;
-  priority: string;
-  status: string;
-  estimated_weight_kg: number;
-  created_at: string;
-  bins: { label: string; store_address: string | null } | null;
-}
-
-async function fetchBins(): Promise<BinSummary[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/bins?limit=100`, {
-      cache: 'no-store',
-    });
-    if (!res.ok) return [];
-    const json = await res.json() as { data: BinSummary[] };
-    return json.data;
-  } catch {
-    return [];
+  if (claims) {
+    if (claims.role === 'admin') redirect('/admin');
+    if (claims.role === 'store_manager') redirect('/store-dashboard');
+    if (claims.role === 'food_bank_coordinator') redirect('/food-bank-dashboard');
+    // Authenticated but no role assigned — send to onboarding
+    redirect('/onboarding');
   }
-}
-
-async function fetchAlerts(): Promise<AlertSummary[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/alerts?limit=10&status=pending`, {
-      cache: 'no-store',
-    });
-    if (!res.ok) return [];
-    const json = await res.json() as { data: AlertSummary[] };
-    return json.data;
-  } catch {
-    return [];
-  }
-}
-
-export const dynamic = 'force-dynamic';
-
-export default async function OverviewPage(): Promise<React.ReactElement> {
-  const [bins, alerts] = await Promise.all([fetchBins(), fetchAlerts()]);
-
-  const onlineBins = bins.filter((b) => b.status === 'online').length;
-  const offlineBins = bins.filter((b) => b.status === 'offline').length;
-  const maintenanceBins = bins.filter((b) => b.status === 'maintenance').length;
-  const pendingAlerts = alerts.length;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-1">Dashboard Overview</h1>
-      <p className="text-[var(--color-text-muted)] text-sm mb-8">Organization-wide bin health and alert summary</p>
-
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <StatCard label="Total Bins" value={bins.length} icon="🗑️" />
-        <StatCard label="Online" value={onlineBins} icon="🟢" color="text-[var(--color-success)]" />
-        <StatCard label="Offline" value={offlineBins} icon="🔴" color="text-[var(--color-danger)]" />
-        <StatCard label="Pending Alerts" value={pendingAlerts} icon="🔔" color="text-[var(--color-warning)]" />
-      </div>
-
-      {/* Offline Bins Warning */}
-      {offlineBins > 0 && (
-        <div className="mb-8 p-4 rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/5">
-          <h3 className="text-sm font-semibold text-[var(--color-danger)] mb-2">
-            ⚠️ {offlineBins} bin{offlineBins > 1 ? 's' : ''} offline
-          </h3>
-          <div className="space-y-2">
-            {bins
-              .filter((b) => b.status === 'offline')
-              .map((bin) => (
-                <div key={bin.id} className="flex items-center justify-between text-sm">
-                  <span className="text-[var(--color-text-muted)]">{bin.label}</span>
-                  <span className="text-xs text-[var(--color-text-muted)]">
-                    Last seen: {bin.last_seen_at ? new Date(bin.last_seen_at).toLocaleString() : 'Never'}
-                  </span>
-                </div>
-              ))}
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+      {/* Nav */}
+      <header className="fixed top-0 w-full z-50 bg-[var(--color-bg)]/80 backdrop-blur-xl border-b border-[var(--color-border)]">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">♻️</span>
+            <span className="text-lg font-bold">Smart Cycle</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href="/auth/login"
+              className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+            >
+              Log In
+            </a>
+            <a
+              href="/auth/login"
+              className="px-5 py-2 rounded-xl text-sm font-semibold bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
+            >
+              Get Started
+            </a>
           </div>
         </div>
-      )}
+      </header>
 
-      {/* Bins Table */}
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-[var(--color-border)]">
-          <h2 className="text-lg font-semibold">All Bins</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[var(--color-border)] text-[var(--color-text-muted)]">
-                <th className="text-left px-6 py-3 font-medium">Label</th>
-                <th className="text-left px-6 py-3 font-medium">Location</th>
-                <th className="text-left px-6 py-3 font-medium">Status</th>
-                <th className="text-left px-6 py-3 font-medium">Last Seen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bins.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-[var(--color-text-muted)]">
-                    No bins registered yet. Use the API to register bins.
-                  </td>
-                </tr>
-              ) : (
-                bins.map((bin) => (
-                  <tr key={bin.id} className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)] transition-colors">
-                    <td className="px-6 py-3 font-medium">{bin.label}</td>
-                    <td className="px-6 py-3 text-[var(--color-text-muted)]">{bin.store_address ?? '—'}</td>
-                    <td className="px-6 py-3">
-                      <StatusBadge status={bin.status} />
-                    </td>
-                    <td className="px-6 py-3 text-[var(--color-text-muted)]">
-                      {bin.last_seen_at ? new Date(bin.last_seen_at).toLocaleString() : 'Never'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Recent Alerts */}
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden">
-        <div className="px-6 py-4 border-b border-[var(--color-border)]">
-          <h2 className="text-lg font-semibold">Pending Alerts</h2>
-        </div>
-        {alerts.length === 0 ? (
-          <p className="px-6 py-8 text-center text-[var(--color-text-muted)]">No pending alerts</p>
-        ) : (
-          <div className="divide-y divide-[var(--color-border)]">
-            {alerts.map((alert) => (
-              <div key={alert.id} className="px-6 py-4 flex items-center justify-between hover:bg-[var(--color-surface-elevated)] transition-colors">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <PriorityBadge priority={alert.priority} />
-                    <span className="font-medium">{alert.bins?.label ?? 'Unknown bin'}</span>
-                  </div>
-                  <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                    {alert.estimated_weight_kg} kg available • {new Date(alert.created_at).toLocaleString()}
-                  </p>
-                </div>
-                <StatusBadge status={alert.status} />
-              </div>
-            ))}
+      {/* Hero */}
+      <section className="pt-32 pb-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-sm font-medium mb-8">
+            🌱 B2B Food Waste Prevention
           </div>
-        )}
-      </div>
+          <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
+            Turn Food Waste Into
+            <span className="text-[var(--color-primary)]"> Community Impact</span>
+          </h1>
+          <p className="text-lg text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12">
+            Smart Cycle connects grocery stores with local food banks using IoT smart bins.
+            Monitor freshness in real-time, automate donations, and reduce waste — all from one platform.
+          </p>
+          <div className="flex items-center justify-center gap-4">
+            <a
+              href="/auth/login"
+              className="px-8 py-3.5 rounded-2xl text-base font-semibold bg-[var(--color-primary)] text-white hover:opacity-90 transition-all shadow-lg shadow-[var(--color-primary)]/20"
+            >
+              Start Free →
+            </a>
+            <Link
+              href="/login"
+              className="px-8 py-3.5 rounded-2xl text-base font-semibold border border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)]/40 transition-all"
+            >
+              Learn More
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-20 px-6 border-t border-[var(--color-border)]">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
+          <p className="text-[var(--color-text-muted)] text-center mb-16 max-w-xl mx-auto">
+            From bin sensor to food bank pickup — fully automated in 7 steps
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StepCard
+              step="01"
+              icon="🗑️"
+              title="Smart Bin Monitoring"
+              description="IoT sensors track temperature, gas levels, and weight in real-time to assess food freshness."
+              color="emerald"
+            />
+            <StepCard
+              step="02"
+              icon="🔔"
+              title="Automated Alerts"
+              description="When freshness drops, an alert is sent to the store manager for donation approval."
+              color="amber"
+            />
+            <StepCard
+              step="03"
+              icon="🚚"
+              title="Smart Routing"
+              description="Approved donations are automatically routed to the nearest food bank with available capacity."
+              color="blue"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Role Cards */}
+      <section className="py-20 px-6 border-t border-[var(--color-border)]">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">Built for Every Role</h2>
+          <p className="text-[var(--color-text-muted)] text-center mb-16 max-w-xl mx-auto">
+            Dedicated dashboards tailored to your needs
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <RoleCard
+              icon="🏪"
+              title="Store Managers"
+              features={['Monitor bin health', 'Approve donations', 'Track pickup status']}
+              color="emerald"
+            />
+            <RoleCard
+              icon="🏦"
+              title="Food Bank Coordinators"
+              features={['Accept incoming donations', 'Manage inventory', 'Confirm pickups']}
+              color="blue"
+            />
+            <RoleCard
+              icon="🔒"
+              title="Administrators"
+              features={['Full system overview', 'Manage all bins & alerts', 'Register stores & food banks']}
+              color="purple"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 px-6 border-t border-[var(--color-border)]">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Reduce Waste?</h2>
+          <p className="text-[var(--color-text-muted)] mb-8">
+            Join Smart Cycle and connect your stores with local food banks today.
+          </p>
+          <a
+            href="/auth/login"
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-lg font-semibold bg-[var(--color-primary)] text-white hover:opacity-90 transition-all shadow-lg shadow-[var(--color-primary)]/20"
+          >
+            Get Started Free →
+          </a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 px-6 border-t border-[var(--color-border)]">
+        <div className="max-w-5xl mx-auto flex items-center justify-between text-xs text-[var(--color-text-muted)]">
+          <span>♻️ Smart Cycle — Food Waste Prevention Platform</span>
+          <span>Built for B2B Hackathon 2026</span>
+        </div>
+      </footer>
     </div>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  icon,
-  color,
-}: {
-  label: string;
-  value: number;
-  icon: string;
-  color?: string;
+function StepCard({ step, icon, title, description, color }: {
+  step: string; icon: string; title: string; description: string; color: string;
 }): React.ReactElement {
+  const borderColors: Record<string, string> = {
+    emerald: 'hover:border-emerald-400/30',
+    amber: 'hover:border-amber-400/30',
+    blue: 'hover:border-blue-400/30',
+  };
+  const textColors: Record<string, string> = {
+    emerald: 'text-emerald-400',
+    amber: 'text-amber-400',
+    blue: 'text-blue-400',
+  };
+
   return (
-    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 hover:border-[var(--color-primary)]/30 transition-colors">
-      <div className="flex items-center justify-between mb-3">
+    <div className={`rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 transition-colors ${borderColors[color]}`}>
+      <div className="flex items-center gap-3 mb-4">
+        <span className={`text-xs font-bold ${textColors[color]}`}>{step}</span>
         <span className="text-2xl">{icon}</span>
       </div>
-      <div className={`text-3xl font-bold mb-1 ${color ?? ''}`}>{value}</div>
-      <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">{label}</div>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">{description}</p>
     </div>
   );
 }
 
-function StatusBadge({ status }: { status: string }): React.ReactElement {
-  const styles: Record<string, string> = {
-    online: 'bg-[var(--color-success)]/10 text-[var(--color-success)]',
-    offline: 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]',
-    maintenance: 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]',
-    pending: 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]',
-    accepted: 'bg-[var(--color-success)]/10 text-[var(--color-success)]',
-    expired: 'bg-[var(--color-text-muted)]/10 text-[var(--color-text-muted)]',
-    cancelled: 'bg-[var(--color-text-muted)]/10 text-[var(--color-text-muted)]',
+function RoleCard({ icon, title, features, color }: {
+  icon: string; title: string; features: string[]; color: string;
+}): React.ReactElement {
+  const borderColors: Record<string, string> = {
+    emerald: 'hover:border-emerald-400/30',
+    blue: 'hover:border-blue-400/30',
+    purple: 'hover:border-purple-400/30',
+  };
+  const dotColors: Record<string, string> = {
+    emerald: 'bg-emerald-400',
+    blue: 'bg-blue-400',
+    purple: 'bg-purple-400',
   };
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status] ?? ''}`}>
-      {status}
-    </span>
-  );
-}
-
-function PriorityBadge({ priority }: { priority: string }): React.ReactElement {
-  const styles: Record<string, string> = {
-    critical: 'bg-[var(--color-critical)]/10 text-[var(--color-critical)]',
-    high: 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]',
-    medium: 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]',
-    low: 'bg-[var(--color-success)]/10 text-[var(--color-success)]',
-  };
-
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase ${styles[priority] ?? ''}`}>
-      {priority}
-    </span>
+    <div className={`rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 transition-colors ${borderColors[color]}`}>
+      <span className="text-3xl mb-4 block">{icon}</span>
+      <h3 className="text-lg font-semibold mb-4">{title}</h3>
+      <ul className="space-y-2">
+        {features.map((f) => (
+          <li key={f} className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+            <span className={`w-1.5 h-1.5 rounded-full ${dotColors[color]}`} />
+            {f}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
