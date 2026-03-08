@@ -108,7 +108,27 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-### 3. Run Locally
+### 3. Set up the python virtual environment
+
+Create the virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Activate it:
+
+```bash
+. venv/bin/activate
+```
+
+Then, install the requirements:
+
+```bash
+pip install requirements.txt
+```
+
+### 4. Run Locally
 
 Open **two terminals** in the project root:
 
@@ -124,13 +144,13 @@ Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
 > **Tip:** Visit [http://localhost:3000/login](http://localhost:3000/login) to see the role-selection landing page.
 
-### 4. Run Tests
+### 5. Run Tests
 
 ```bash
 npm run test --workspace=apps/api
 ```
 
-### 5. Build for Production
+### 6. Build for Production
 
 ```bash
 npm run build --workspace=apps/web
