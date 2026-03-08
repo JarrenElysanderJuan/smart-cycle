@@ -1,0 +1,6 @@
+{
+  "/(store)/store-dashboard/camera-demo/page": "app/(store)/store-dashboard/camera-demo/page.js",
+  "/(store)/store-dashboard/bins/page": "app/(store)/store-dashboard/bins/page.js",
+  "/(store)/store-dashboard/page": "app/(store)/store-dashboard/page.js",
+  "/(store)/store-dashboard/alerts/page": "app/(store)/store-dashboard/alerts/page.js"
+}
