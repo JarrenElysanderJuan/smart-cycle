@@ -35,10 +35,10 @@ export default async function LandingPage(): Promise<React.ReactElement> {
           <p className="text-sm font-semibold text-[var(--color-primary)] uppercase tracking-[0.2em] mb-8">
             Food Waste Prevention
           </p>
-          <h1 className="font-[family-name:var(--font-display)] text-[clamp(3rem,8vw,7rem)] leading-[0.95] text-[var(--color-text)] max-w-4xl">
-            Surplus food,
+          <h1 className="font-[family-name:var(--font-display)] text-[clamp(3rem,8vw,7rem)] leading-[0.95] text-[var(--color-text)] max-w-8xl">
+            A Seamless Solution
             <br />
-            <span className="text-[var(--color-primary)]">meet community.</span>
+            <span className="text-[var(--color-primary)]">for Food Redistribution</span>
           </h1>
           <div className="mt-12 flex items-start gap-16">
             <p className="text-lg text-[var(--color-text-muted)] max-w-md leading-relaxed">
@@ -58,9 +58,9 @@ export default async function LandingPage(): Promise<React.ReactElement> {
       {/* IMPACT — Full-bleed sage green band with large stat */}
       <section className="bg-[var(--color-primary)] py-20 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-baseline gap-8">
-          <span className="font-[family-name:var(--font-display)] text-[clamp(5rem,12vw,10rem)] leading-none text-white/90">40%</span>
+          <span className="font-[family-name:var(--font-display)] text-[clamp(5rem,12vw,10rem)] leading-none text-white/90">$58B</span>
           <p className="text-white/70 text-xl max-w-sm leading-relaxed">
-            of food produced in the US is wasted every year.
+            of food produced in the Canada is wasted every year.
             Smart Cycle helps grocery stores turn that surplus into meals.
           </p>
         </div>
