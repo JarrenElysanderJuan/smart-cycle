@@ -7,9 +7,8 @@ import { API_BASE_URL } from '@/lib/supabase';
 /**
  * Incoming Donations Page — client component.
  *
- * Reads food_bank_id from Auth0 user claims.
+ * Fetches food_bank_id from the user_profiles API (fallback from JWT claims).
  */
-const CLAIMS_NAMESPACE = 'https://smart-cycle.com';
 
 interface Donation {
   id: string;
@@ -30,10 +29,24 @@ interface Donation {
 
 export default function DonationsPage(): React.ReactElement {
   const { user } = useUser();
-  const foodBankId = user?.[`${CLAIMS_NAMESPACE}/food_bank_id`] as string | undefined;
+  const [foodBankId, setFoodBankId] = useState<string | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
+
+  // Fetch food_bank_id from user_profiles API
+  useEffect(() => {
+    if (!user?.sub) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/users/profile/${encodeURIComponent(user.sub)}`);
+        if (res.ok) {
+          const json = await res.json() as { data: { food_bank_id?: string } };
+          setFoodBankId(json.data?.food_bank_id ?? null);
+        }
+      } catch { /* empty */ }
+    })();
+  }, [user?.sub]);
 
   const fetchDonations = async (): Promise<void> => {
     if (!foodBankId) return;
@@ -89,6 +102,11 @@ export default function DonationsPage(): React.ReactElement {
 
       {loading ? (
         <p className="text-[var(--color-text-muted)]">Loading donations...</p>
+      ) : !foodBankId ? (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-12 text-center">
+          <p className="text-4xl mb-4">⚙️</p>
+          <p className="text-[var(--color-text-muted)]">No food bank linked to your account yet</p>
+        </div>
       ) : donations.length === 0 ? (
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-12 text-center">
           <p className="text-4xl mb-4">📦</p>

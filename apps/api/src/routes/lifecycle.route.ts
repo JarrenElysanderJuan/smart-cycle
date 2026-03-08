@@ -73,7 +73,7 @@ router.post('/:alertId/approve', requireRole('store_manager', 'admin'), async (r
   // Fetch active food banks for routing
   const { data: foodBanks } = await supabaseAdmin
     .from('food_banks')
-    .select('id, name, latitude, longitude, capacity_kg, is_active')
+    .select('id, name, latitude, longitude, capacity_kg, current_inventory_kg, pickup_capability, is_active')
     .eq('is_active', true);
 
   if (foodBanks && foodBanks.length > 0) {
@@ -91,6 +91,8 @@ router.post('/:alertId/approve', requireRole('store_manager', 'admin'), async (r
         latitude: fb.latitude ?? 0,
         longitude: fb.longitude ?? 0,
         capacity_kg: fb.capacity_kg ?? 0,
+        current_inventory_kg: fb.current_inventory_kg ?? 0,
+        pickup_capability: fb.pickup_capability ?? false,
         is_active: fb.is_active,
       }))
     );

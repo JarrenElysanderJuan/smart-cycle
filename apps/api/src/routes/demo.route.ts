@@ -21,10 +21,10 @@ router.post('/create-bin', async (req: Request, res: Response): Promise<void> =>
     return;
   }
 
-  // Look up the store to get the organization_id
+  // Look up the store to get the organization_id and coordinates
   const { data: store } = await supabaseAdmin
     .from('stores')
-    .select('id, organization_id, address, city, state')
+    .select('id, organization_id, address, city, state, latitude, longitude')
     .eq('id', store_id)
     .single();
 
@@ -44,11 +44,13 @@ router.post('/create-bin', async (req: Request, res: Response): Promise<void> =>
       store_id: store.id,
       label: binLabel,
       store_address: `${store.address}, ${store.city}, ${store.state}`,
+      latitude: store.latitude ?? null,
+      longitude: store.longitude ?? null,
       api_key_hash: apiKeyHash,
       status: 'online',
       location_description: 'Back of store — produce section',
     })
-    .select('id, label, status, store_address')
+    .select('id, label, status, store_address, latitude, longitude')
     .single();
 
   if (error || !bin) {
@@ -239,7 +241,7 @@ router.post('/approve-alert', async (req: Request, res: Response): Promise<void>
   // Route to food banks
   const { data: foodBanks } = await supabaseAdmin
     .from('food_banks')
-    .select('id, name, latitude, longitude, capacity_kg, is_active')
+    .select('id, name, latitude, longitude, capacity_kg, current_inventory_kg, pickup_capability, is_active')
     .eq('is_active', true);
 
   let routedCount = 0;
@@ -263,6 +265,8 @@ router.post('/approve-alert', async (req: Request, res: Response): Promise<void>
         latitude: fb.latitude ?? 0,
         longitude: fb.longitude ?? 0,
         capacity_kg: fb.capacity_kg ?? 0,
+        current_inventory_kg: fb.current_inventory_kg ?? 0,
+        pickup_capability: fb.pickup_capability ?? false,
         is_active: fb.is_active,
       }))
     );

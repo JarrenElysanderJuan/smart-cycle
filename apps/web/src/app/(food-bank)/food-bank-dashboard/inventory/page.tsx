@@ -6,9 +6,8 @@ import { API_BASE_URL } from '@/lib/supabase';
 
 /**
  * Food Bank Inventory Page — client component.
- * Reads food_bank_id from Auth0 user claims.
+ * Fetches food_bank_id from user_profiles API.
  */
-const CLAIMS_NAMESPACE = 'https://smart-cycle.com';
 
 interface FoodBankProfile {
   id: string; name: string; capacity_kg: number | null;
@@ -17,10 +16,24 @@ interface FoodBankProfile {
 
 export default function InventoryPage(): React.ReactElement {
   const { user } = useUser();
-  const foodBankId = user?.[`${CLAIMS_NAMESPACE}/food_bank_id`] as string | undefined;
+  const [foodBankId, setFoodBankId] = useState<string | null>(null);
   const [profile, setProfile] = useState<FoodBankProfile | null>(null);
   const [newInventory, setNewInventory] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Fetch food_bank_id from user_profiles API
+  useEffect(() => {
+    if (!user?.sub) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/users/profile/${encodeURIComponent(user.sub)}`);
+        if (res.ok) {
+          const json = await res.json() as { data: { food_bank_id?: string } };
+          setFoodBankId(json.data?.food_bank_id ?? null);
+        }
+      } catch { /* empty */ }
+    })();
+  }, [user?.sub]);
 
   const fetchProfile = async (): Promise<void> => {
     if (!foodBankId) return;

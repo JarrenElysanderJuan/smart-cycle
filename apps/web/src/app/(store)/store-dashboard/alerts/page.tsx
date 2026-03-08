@@ -7,10 +7,8 @@ import { API_BASE_URL } from '@/lib/supabase';
 /**
  * Store Alerts Page — client component.
  *
- * The store_id comes from the user's Auth0 claims (injected by the
- * Post-Login Action). We read it from the client-side user object.
+ * Fetches store_id from the user_profiles API.
  */
-const CLAIMS_NAMESPACE = 'https://smart-cycle.com';
 
 interface Alert {
   id: string;
@@ -28,10 +26,24 @@ interface Alert {
 
 export default function StoreAlertsPage(): React.ReactElement {
   const { user } = useUser();
-  const storeId = user?.[`${CLAIMS_NAMESPACE}/store_id`] as string | undefined;
+  const [storeId, setStoreId] = useState<string | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState<string | null>(null);
+
+  // Fetch store_id from user_profiles API
+  useEffect(() => {
+    if (!user?.sub) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/users/profile/${encodeURIComponent(user.sub)}`);
+        if (res.ok) {
+          const json = await res.json() as { data: { store_id?: string } };
+          setStoreId(json.data?.store_id ?? null);
+        }
+      } catch { /* empty */ }
+    })();
+  }, [user?.sub]);
 
   const fetchAlerts = async (): Promise<void> => {
     if (!storeId) return;

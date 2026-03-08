@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../lib/supabase.js';
+import { geocodeAddress } from '../lib/geocode.js';
 
 const router = Router();
 
@@ -34,7 +35,7 @@ const UpdateStoreSchema = CreateStoreSchema.partial().omit({ organization_id: tr
  * POST /api/v1/stores
  *
  * Register a new grocery store.
- * TODO: Add Auth0 JWT + admin role check
+ * Automatically geocodes the address to lat/lng if not provided.
  */
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   const parseResult = CreateStoreSchema.safeParse(req.body);
@@ -49,6 +50,18 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
   const payload = parseResult.data;
 
+  // Geocode address if lat/lng not provided
+  let lat = payload.latitude ?? null;
+  let lng = payload.longitude ?? null;
+  if (lat === null || lng === null) {
+    const geo = await geocodeAddress(payload.address, payload.city, payload.state, payload.zip_code);
+    if (geo) {
+      lat = geo.latitude;
+      lng = geo.longitude;
+      console.log(`📍 Geocoded store "${payload.name}" → ${lat}, ${lng}`);
+    }
+  }
+
   const { data: store, error } = await supabaseAdmin
     .from('stores')
     .insert({
@@ -58,8 +71,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       city: payload.city,
       state: payload.state,
       zip_code: payload.zip_code,
-      latitude: payload.latitude ?? null,
-      longitude: payload.longitude ?? null,
+      latitude: lat,
+      longitude: lng,
       contact_name: payload.contact_name,
       contact_email: payload.contact_email,
       contact_phone: payload.contact_phone ?? null,

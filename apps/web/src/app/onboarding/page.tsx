@@ -36,6 +36,9 @@ export default function OnboardingPage(): React.ReactElement {
   const [fbContactPhone, setFbContactPhone] = useState('');
   const [fbCapacity, setFbCapacity] = useState('');
   const [fbPickup, setFbPickup] = useState(false);
+  const [fbMaxPickupDist, setFbMaxPickupDist] = useState('');
+  const [fbServiceRadius, setFbServiceRadius] = useState('');
+  const [fbWeeklyDemand, setFbWeeklyDemand] = useState('');
 
 
   /** Create an organization via the backend API (bypasses RLS). */
@@ -140,7 +143,9 @@ export default function OnboardingPage(): React.ReactElement {
           contact_phone: fbContactPhone || undefined,
           capacity_kg: fbCapacity ? parseFloat(fbCapacity) : undefined,
           pickup_capability: fbPickup,
-
+          max_pickup_distance_km: fbMaxPickupDist ? parseFloat(fbMaxPickupDist) : undefined,
+          service_area_radius_km: fbServiceRadius ? parseFloat(fbServiceRadius) : undefined,
+          avg_weekly_demand_kg: fbWeeklyDemand ? parseFloat(fbWeeklyDemand) : undefined,
           current_inventory_kg: 0,
         }),
       });
@@ -312,12 +317,21 @@ export default function OnboardingPage(): React.ReactElement {
             </Section>
 
             <Section title="Operations">
-              <Field label="Storage Capacity (kg)" value={fbCapacity} onChange={setFbCapacity} type="number" placeholder="e.g. 500" />
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Storage Capacity (kg)" value={fbCapacity} onChange={setFbCapacity} type="number" placeholder="e.g. 500" />
+                <Field label="Avg. Weekly Demand (kg)" value={fbWeeklyDemand} onChange={setFbWeeklyDemand} type="number" placeholder="e.g. 200" />
+              </div>
               <div className="flex items-center gap-3 mt-2">
                 <input type="checkbox" checked={fbPickup} onChange={(e) => setFbPickup(e.target.checked)}
                   className="w-4 h-4 rounded accent-blue-500" id="pickup" />
                 <label htmlFor="pickup" className="text-sm">We can pick up donations from stores</label>
               </div>
+              {fbPickup && (
+                <Field label="Max Pickup Distance (km)" value={fbMaxPickupDist} onChange={setFbMaxPickupDist} type="number" placeholder="e.g. 25" />
+              )}
+              {!fbPickup && (
+                <Field label="Service Area Radius (km)" value={fbServiceRadius} onChange={setFbServiceRadius} type="number" placeholder="e.g. 15" />
+              )}
             </Section>
 
             <button type="submit" disabled={loading}
