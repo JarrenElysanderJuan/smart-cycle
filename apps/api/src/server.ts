@@ -14,6 +14,7 @@ import lifecycleRouter from './routes/lifecycle.route.js';
 import organizationsRouter from './routes/organizations.route.js';
 import usersRouter from './routes/users.route.js';
 import demoRouter from './routes/demo.route.js';
+import demoCameraRouter from './routes/demo-camera.route.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/v1/food-banks', foodBanksRouter);
 app.use('/api/v1/organizations', organizationsRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/demo', demoRouter);
+app.use('/api/v1/demo/camera', demoCameraRouter);
 
 // Read-only lifecycle endpoints (no JWT needed for dashboard views)
 app.use('/api/v1', lifecycleRouter);  // stores/:id/alerts, food-banks/:id/donations

@@ -31,7 +31,9 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         <NavLink href="/store-dashboard" label="Overview" icon="📊" />
         <NavLink href="/store-dashboard/bins" label="My Bins" icon="🗑️" />
         <NavLink href="/store-dashboard/alerts" label="Alerts" icon="🔔" />
+        <NavLink href="/store-dashboard/map" label="Map" icon="🗺️" />
         <NavLink href="/store-dashboard/demo" label="Demo" icon="🧪" />
+        <NavLink href="/store-dashboard/camera-demo" label="Live Camera" icon="📷" />
         <NavLink href="/store-dashboard/settings" label="Settings" icon="⚙️" />
 
         <div className="mt-auto pt-6 border-t border-[var(--color-border)]">
