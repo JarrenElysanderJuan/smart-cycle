@@ -7,11 +7,69 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
+      bin_telemetry_daily_summary: {
+        Row: {
+          avg_freshness_score: number | null
+          avg_gas_ppm: number
+          avg_temperature_c: number
+          avg_weight_kg: number
+          bin_id: string
+          created_at: string
+          id: string
+          max_gas_ppm: number
+          max_temperature_c: number
+          min_battery_level: number
+          min_temperature_c: number
+          reading_count: number
+          summary_date: string
+        }
+        Insert: {
+          avg_freshness_score?: number | null
+          avg_gas_ppm: number
+          avg_temperature_c: number
+          avg_weight_kg: number
+          bin_id: string
+          created_at?: string
+          id?: string
+          max_gas_ppm: number
+          max_temperature_c: number
+          min_battery_level: number
+          min_temperature_c: number
+          reading_count: number
+          summary_date: string
+        }
+        Update: {
+          avg_freshness_score?: number | null
+          avg_gas_ppm?: number
+          avg_temperature_c?: number
+          avg_weight_kg?: number
+          bin_id?: string
+          created_at?: string
+          id?: string
+          max_gas_ppm?: number
+          max_temperature_c?: number
+          min_battery_level?: number
+          min_temperature_c?: number
+          reading_count?: number
+          summary_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bin_telemetry_daily_summary_bin_id_fkey"
+            columns: ["bin_id"]
+            isOneToOne: false
+            referencedRelation: "bins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bin_telemetry_readings: {
         Row: {
           battery_level: number
@@ -70,6 +128,7 @@ export type Database = {
           organization_id: string
           status: Database["public"]["Enums"]["bin_status"]
           store_address: string | null
+          store_id: string | null
         }
         Insert: {
           api_key_hash: string
@@ -84,6 +143,7 @@ export type Database = {
           organization_id: string
           status?: Database["public"]["Enums"]["bin_status"]
           store_address?: string | null
+          store_id?: string | null
         }
         Update: {
           api_key_hash?: string
@@ -98,6 +158,7 @@ export type Database = {
           organization_id?: string
           status?: Database["public"]["Enums"]["bin_status"]
           store_address?: string | null
+          store_id?: string | null
         }
         Relationships: [
           {
@@ -105,6 +166,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bins_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -153,39 +221,58 @@ export type Database = {
       }
       donation_alerts: {
         Row: {
+          approved_at: string | null
+          approved_by_user_id: string | null
           bin_id: string
+          completed_at: string | null
           created_at: string
           estimated_weight_kg: number
           expires_at: string
           id: string
+          picked_up_at: string | null
           priority: Database["public"]["Enums"]["alert_priority"]
           resolved_at: string | null
           status: Database["public"]["Enums"]["alert_status"]
           telemetry_reading_id: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by_user_id?: string | null
           bin_id: string
+          completed_at?: string | null
           created_at?: string
           estimated_weight_kg: number
           expires_at: string
           id?: string
+          picked_up_at?: string | null
           priority?: Database["public"]["Enums"]["alert_priority"]
           resolved_at?: string | null
           status?: Database["public"]["Enums"]["alert_status"]
           telemetry_reading_id: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by_user_id?: string | null
           bin_id?: string
+          completed_at?: string | null
           created_at?: string
           estimated_weight_kg?: number
           expires_at?: string
           id?: string
+          picked_up_at?: string | null
           priority?: Database["public"]["Enums"]["alert_priority"]
           resolved_at?: string | null
           status?: Database["public"]["Enums"]["alert_status"]
           telemetry_reading_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "donation_alerts_approved_by_user_id_fkey"
+            columns: ["approved_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "donation_alerts_bin_id_fkey"
             columns: ["bin_id"]
@@ -438,11 +525,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      aggregate_and_prune_telemetry: {
+        Args: { retention_days?: number }
+        Returns: Json
+      }
     }
     Enums: {
       alert_priority: "low" | "medium" | "high" | "critical"
-      alert_status: "pending" | "accepted" | "expired" | "cancelled"
+      alert_status:
+        | "pending"
+        | "approved_by_store"
+        | "routed"
+        | "accepted"
+        | "picked_up"
+        | "completed"
+        | "expired"
+        | "cancelled"
       bin_status: "online" | "offline" | "maintenance"
       recipient_response: "pending" | "accepted" | "declined" | "no_response"
       subscription_tier: "free" | "pro" | "enterprise"
@@ -575,7 +673,16 @@ export const Constants = {
   public: {
     Enums: {
       alert_priority: ["low", "medium", "high", "critical"],
-      alert_status: ["pending", "accepted", "expired", "cancelled"],
+      alert_status: [
+        "pending",
+        "approved_by_store",
+        "routed",
+        "accepted",
+        "picked_up",
+        "completed",
+        "expired",
+        "cancelled",
+      ],
       bin_status: ["online", "offline", "maintenance"],
       recipient_response: ["pending", "accepted", "declined", "no_response"],
       subscription_tier: ["free", "pro", "enterprise"],

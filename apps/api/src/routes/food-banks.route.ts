@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../lib/supabase.js';
+import { geocodeAddress } from '../lib/geocode.js';
 
 const router = Router();
 
@@ -41,7 +42,7 @@ const UpdateFoodBankSchema = CreateFoodBankSchema.partial().omit({ organization_
  * POST /api/v1/food-banks
  *
  * Register a new food bank with distribution-relevant data.
- * TODO: Add Auth0 JWT + admin role check
+ * Automatically geocodes the address to lat/lng if not provided.
  */
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   const parseResult = CreateFoodBankSchema.safeParse(req.body);
@@ -56,6 +57,18 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
   const payload = parseResult.data;
 
+  // Geocode address if lat/lng not provided
+  let lat = payload.latitude ?? null;
+  let lng = payload.longitude ?? null;
+  if (lat === null || lng === null) {
+    const geo = await geocodeAddress(payload.address, payload.city, payload.state, payload.zip_code);
+    if (geo) {
+      lat = geo.latitude;
+      lng = geo.longitude;
+      console.log(`📍 Geocoded food bank "${payload.name}" → ${lat}, ${lng}`);
+    }
+  }
+
   const { data: foodBank, error } = await supabaseAdmin
     .from('food_banks')
     .insert({
@@ -67,8 +80,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       city: payload.city,
       state: payload.state,
       zip_code: payload.zip_code,
-      latitude: payload.latitude ?? null,
-      longitude: payload.longitude ?? null,
+      latitude: lat,
+      longitude: lng,
       capacity_kg: payload.capacity_kg ?? null,
       operating_hours: payload.operating_hours ?? null,
       dietary_restrictions: payload.dietary_restrictions ?? null,

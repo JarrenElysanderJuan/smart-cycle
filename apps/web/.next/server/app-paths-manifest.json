@@ -1,7 +1,9 @@
 {
+  "/onboarding/page": "app/onboarding/page.js",
   "/page": "app/page.js",
-  "/stores/register/page": "app/stores/register/page.js",
-  "/bins/page": "app/bins/page.js",
-  "/alerts/page": "app/alerts/page.js",
-  "/food-banks/register/page": "app/food-banks/register/page.js"
+  "/(food-bank)/food-bank-dashboard/page": "app/(food-bank)/food-bank-dashboard/page.js",
+  "/(food-bank)/food-bank-dashboard/donations/page": "app/(food-bank)/food-bank-dashboard/donations/page.js",
+  "/(store)/store-dashboard/demo/page": "app/(store)/store-dashboard/demo/page.js",
+  "/(admin)/admin/page": "app/(admin)/admin/page.js",
+  "/(store)/store-dashboard/page": "app/(store)/store-dashboard/page.js"
 }
