@@ -7,6 +7,7 @@ import torchvision.models as models
 from torchvision import transforms
 import random
 import cv2
+import sys
 
 url = "http://oppo-reno3-a:8080"
 
